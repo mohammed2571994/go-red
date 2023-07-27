@@ -4,20 +4,9 @@ import (
 	"fmt"
 	"net"
 	"os"
-)
 
-const (
-	ping = "ping"
-	echo = "echo"
-	set  = "set"
-	get  = "get"
-)
-
-const (
-	simpleMessage = "+"
-	bulkString    = "$"
-	errorMessage  = "-"
-	arrayMessage  = "*"
+	"go-red/commands"
+	"go-red/parser"
 )
 
 func main() {
@@ -42,27 +31,23 @@ func main() {
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-	respRequest := NewRespRequest(conn)
+	respRequest := parser.NewParser(conn)
+
+	commands.InitCommands()
 
 	for {
-		command, args, err := respRequest.GetRequestData()
+
+		command, args, err := respRequest.Parse()
 		if err != nil {
-			fmt.Println("Error reading:", err)
+			fmt.Println("Error:", err)
 			return
 		}
 
-		switch command {
-		case ping:
-			err = HandlePing(args, conn)
-		case echo:
-			err = HandleEcho(args, conn)
-		default:
-			err = HandleUnknownCommand(args, conn)
-		}
-
+		err = command.ExecuteCommand(args, conn)
 		if err != nil {
-			fmt.Println("Error writing:", err)
+			fmt.Println("Error :", err)
 			return
 		}
+
 	}
 }
