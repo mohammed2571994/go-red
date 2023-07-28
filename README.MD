@@ -13,8 +13,8 @@ a simple Redis server implementation, designed for learning Golang and understan
 - [ ] HGETALL
 - [ ] HSET
 
-- [ ] INCR
-- [ ] DECR
+- [x] INCR
+- [x] DECR
 
 ## Features
 - [ ] AOF persistency

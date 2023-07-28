@@ -99,7 +99,26 @@ var incrementCommand Command = Command{
 		if exsists {
 			_, err := strconv.ParseInt(storedValue, 10, 64)
 			if err != nil {
-				return "Error during conversion"
+				return "value is not an integer or out of range"
+			}
+		}
+
+		return ""
+	},
+}
+
+var decrementCommand Command = Command{
+	name:         "decr",
+	minArguments: 1,
+	maxArguments: 1,
+	handler:      handleDecrement,
+	specialValidator: func(args []string) string {
+		storedValue, exsists := storage.Get(args[0])
+
+		if exsists {
+			_, err := strconv.ParseInt(storedValue, 10, 64)
+			if err != nil {
+				return "value is not an integer or out of range"
 			}
 		}
 
@@ -126,6 +145,7 @@ func InitCommands() {
 	commandsMap[setCommand.name] = setCommand
 	commandsMap[deleteCommand.name] = deleteCommand
 	commandsMap[incrementCommand.name] = incrementCommand
+	commandsMap[decrementCommand.name] = decrementCommand
 	commandsMap[unknownCommand.name] = unknownCommand
 }
 

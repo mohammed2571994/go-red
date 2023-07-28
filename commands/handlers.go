@@ -84,14 +84,31 @@ func handleDelete(args []string, conn net.Conn) (err error) {
 
 func handleIncrement(args []string, conn net.Conn) (err error) {
 	storedValue, exsists := storage.Get(args[0])
-	var convertedValue int64
+	var convertedValue int64 = 0 //by defaule its zero
 
 	if exsists {
 		convertedValue, _ = strconv.ParseInt(storedValue, 10, 64)
-		fmt.Println(convertedValue)
 	}
 
 	convertedValue++
+
+	storage.Set(args[0], fmt.Sprint(convertedValue))
+	msg := marshalResponse(fmt.Sprint(convertedValue), integerMessage)
+
+	_, err = conn.Write([]byte(msg))
+
+	return err
+}
+
+func handleDecrement(args []string, conn net.Conn) (err error) {
+	storedValue, exsists := storage.Get(args[0])
+	var convertedValue int64 = 0 //by defaule its zero
+
+	if exsists {
+		convertedValue, _ = strconv.ParseInt(storedValue, 10, 64)
+	}
+
+	convertedValue--
 
 	storage.Set(args[0], fmt.Sprint(convertedValue))
 	msg := marshalResponse(fmt.Sprint(convertedValue), integerMessage)
