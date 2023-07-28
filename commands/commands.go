@@ -2,7 +2,9 @@ package commands
 
 import (
 	"fmt"
+	"go-red/storage"
 	"net"
+	"strconv"
 )
 
 type Command struct {
@@ -86,6 +88,25 @@ var deleteCommand Command = Command{
 	},
 }
 
+var incrementCommand Command = Command{
+	name:         "incr",
+	minArguments: 1,
+	maxArguments: 1,
+	handler:      handleIncrement,
+	specialValidator: func(args []string) string {
+		storedValue, exsists := storage.Get(args[0])
+
+		if exsists {
+			_, err := strconv.ParseInt(storedValue, 10, 64)
+			if err != nil {
+				return "Error during conversion"
+			}
+		}
+
+		return ""
+	},
+}
+
 var unknownCommand Command = Command{
 	name:         "unknown",
 	minArguments: 0,
@@ -99,12 +120,13 @@ var unknownCommand Command = Command{
 var commandsMap = make(map[string]Command)
 
 func InitCommands() {
-	commandsMap["ping"] = pingCommand
-	commandsMap["echo"] = echoCommand
-	commandsMap["get"] = getCommand
-	commandsMap["set"] = setCommand
-	commandsMap["del"] = deleteCommand
-	commandsMap["unknown"] = unknownCommand
+	commandsMap[pingCommand.name] = pingCommand
+	commandsMap[echoCommand.name] = echoCommand
+	commandsMap[getCommand.name] = getCommand
+	commandsMap[setCommand.name] = setCommand
+	commandsMap[deleteCommand.name] = deleteCommand
+	commandsMap[incrementCommand.name] = incrementCommand
+	commandsMap[unknownCommand.name] = unknownCommand
 }
 
 func GetCommand(name string) Command {

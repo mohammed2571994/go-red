@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-red/storage"
 	"net"
+	"strconv"
 )
 
 const (
@@ -79,6 +80,25 @@ func handleDelete(args []string, conn net.Conn) (err error) {
 
 	_, err = conn.Write([]byte(msg))
 	return
+}
+
+func handleIncrement(args []string, conn net.Conn) (err error) {
+	storedValue, exsists := storage.Get(args[0])
+	var convertedValue int64
+
+	if exsists {
+		convertedValue, _ = strconv.ParseInt(storedValue, 10, 64)
+		fmt.Println(convertedValue)
+	}
+
+	convertedValue++
+
+	storage.Set(args[0], fmt.Sprint(convertedValue))
+	msg := marshalResponse(fmt.Sprint(convertedValue), integerMessage)
+
+	_, err = conn.Write([]byte(msg))
+
+	return err
 }
 
 func marshalResponse(msg string, msgType string) string {
