@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"os"
@@ -31,7 +32,7 @@ func main() {
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-	respRequest := parser.NewParser(conn)
+	respRequest := parser.NewParser(*bufio.NewReader(conn))
 
 	commands.InitCommands()
 

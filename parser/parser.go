@@ -2,7 +2,6 @@ package parser
 
 import (
 	"bufio"
-	"net"
 	"strconv"
 	"strings"
 
@@ -13,8 +12,8 @@ type Parser struct {
 	reader *bufio.Reader
 }
 
-func NewParser(conn net.Conn) *Parser {
-	return &Parser{reader: bufio.NewReader(conn)}
+func NewParser(reader bufio.Reader) *Parser {
+	return &Parser{reader: &reader}
 }
 
 func (resp *Parser) Parse() (command commands.Command, args []string, err error) {

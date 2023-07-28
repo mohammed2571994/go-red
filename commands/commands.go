@@ -8,7 +8,7 @@ import (
 )
 
 type Command struct {
-	name             string
+	Name             string
 	minArguments     int
 	maxArguments     int
 	handler          func(args []string, conn net.Conn) error
@@ -31,14 +31,14 @@ func (command Command) ExecuteCommand(args []string, conn net.Conn) error {
 
 func (command Command) validate(args []string) string {
 	if (command.maxArguments != -1 && len(args) > command.maxArguments) || len(args) < command.minArguments {
-		return fmt.Sprintf("wrong number of arguments for the command %s ", command.name)
+		return fmt.Sprintf("wrong number of arguments for the command %s ", command.Name)
 	}
 
 	return command.specialValidator(args)
 }
 
 var pingCommand = Command{
-	name:         "ping",
+	Name:         "ping",
 	minArguments: 0,
 	maxArguments: 1,
 	handler:      handlePing,
@@ -48,7 +48,7 @@ var pingCommand = Command{
 }
 
 var setCommand Command = Command{
-	name:         "set",
+	Name:         "set",
 	minArguments: 2,
 	// TODO: add support for options like expiry date
 	maxArguments: 2,
@@ -59,7 +59,7 @@ var setCommand Command = Command{
 }
 
 var getCommand Command = Command{
-	name:         "get",
+	Name:         "get",
 	minArguments: 1,
 	maxArguments: 1,
 	handler:      handleGet,
@@ -69,7 +69,7 @@ var getCommand Command = Command{
 }
 
 var echoCommand Command = Command{
-	name:         "echo",
+	Name:         "echo",
 	minArguments: 1,
 	maxArguments: 1,
 	handler:      handleEcho,
@@ -79,7 +79,7 @@ var echoCommand Command = Command{
 }
 
 var deleteCommand Command = Command{
-	name:         "del",
+	Name:         "del",
 	minArguments: 1,
 	maxArguments: -1,
 	handler:      handleDelete,
@@ -89,7 +89,7 @@ var deleteCommand Command = Command{
 }
 
 var incrementCommand Command = Command{
-	name:         "incr",
+	Name:         "incr",
 	minArguments: 1,
 	maxArguments: 1,
 	handler:      handleIncrement,
@@ -108,7 +108,7 @@ var incrementCommand Command = Command{
 }
 
 var decrementCommand Command = Command{
-	name:         "decr",
+	Name:         "decr",
 	minArguments: 1,
 	maxArguments: 1,
 	handler:      handleDecrement,
@@ -127,7 +127,7 @@ var decrementCommand Command = Command{
 }
 
 var unknownCommand Command = Command{
-	name:         "unknown",
+	Name:         "unknown",
 	minArguments: 0,
 	maxArguments: -1,
 	handler:      handleUnknownCommand,
@@ -139,14 +139,14 @@ var unknownCommand Command = Command{
 var commandsMap = make(map[string]Command)
 
 func InitCommands() {
-	commandsMap[pingCommand.name] = pingCommand
-	commandsMap[echoCommand.name] = echoCommand
-	commandsMap[getCommand.name] = getCommand
-	commandsMap[setCommand.name] = setCommand
-	commandsMap[deleteCommand.name] = deleteCommand
-	commandsMap[incrementCommand.name] = incrementCommand
-	commandsMap[decrementCommand.name] = decrementCommand
-	commandsMap[unknownCommand.name] = unknownCommand
+	commandsMap[pingCommand.Name] = pingCommand
+	commandsMap[echoCommand.Name] = echoCommand
+	commandsMap[getCommand.Name] = getCommand
+	commandsMap[setCommand.Name] = setCommand
+	commandsMap[deleteCommand.Name] = deleteCommand
+	commandsMap[incrementCommand.Name] = incrementCommand
+	commandsMap[decrementCommand.Name] = decrementCommand
+	commandsMap[unknownCommand.Name] = unknownCommand
 }
 
 func GetCommand(name string) Command {
