@@ -15,12 +15,12 @@ import (
 func main() {
 	// init config and commands
 	commands.InitCommands()
-	config.InitConfig(true, "6379")
+	serverConfig := config.InitConfig(true, "127.0.0.1:6379", "storage.aof")
 
 	//storage
-	storage, err := storage.NewStorage("db.txt")
+	storage, err := storage.NewStorage(serverConfig.AofPath)
 	if err != nil {
-		fmt.Println("Failed during sotrate creation ", err)
+		fmt.Println("Failed during sotrage creation ", err)
 		os.Exit(1)
 	}
 
@@ -30,9 +30,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	l, err := net.Listen("tcp", "127.0.0.1:6379")
+	l, err := net.Listen("tcp", serverConfig.Address)
 	if err != nil {
-		fmt.Println("Failed to bind to port 6379", err)
+		fmt.Printf("Failed to bind to address: %s, error: %v", serverConfig.Address, err)
 		os.Exit(1)
 	}
 	defer l.Close()
@@ -41,7 +41,7 @@ func main() {
 	for {
 		conn, err := l.Accept()
 		if err != nil {
-			fmt.Println("Error accepting connection: ", err.Error())
+			fmt.Println("Error accepting connection: ", err)
 			os.Exit(1)
 		}
 
@@ -76,11 +76,9 @@ func handleConnection(conn net.Conn, storage *storage.Storage) {
 	}
 }
 
-func loadAof(storage *storage.Storage) error {
+func loadAof(storage *storage.Storage) (err error) {
 	currentShouldPersist := config.ServerConfig.ShouldPersist
 	config.ServerConfig.ShouldPersist = false
-
-	defer storage.File.Close()
 
 	parser := parser.NewParser(storage.Reader)
 
@@ -90,8 +88,6 @@ func loadAof(storage *storage.Storage) error {
 			break
 		}
 
-		fmt.Println(args)
-
 		_, err = command.ExecuteCommand(args, rawData, storage)
 		if err != nil {
 			fmt.Println("Error while executing the command:", err)
@@ -100,6 +96,6 @@ func loadAof(storage *storage.Storage) error {
 	}
 
 	config.ServerConfig.ShouldPersist = currentShouldPersist
-	fmt.Println("config.ServerConfig.ShouldPersist", config.ServerConfig.ShouldPersist)
-	return nil
+
+	return
 }
