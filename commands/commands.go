@@ -3,18 +3,17 @@ package commands
 import (
 	"fmt"
 	"go-red/storage"
-	"strconv"
 )
 
 type Command struct {
 	Name             string
 	minArguments     int
 	maxArguments     int
-	handler          func(args []string, rawData []byte) (string, error)
+	handler          func(args []string, rawData []byte, storage *storage.Storage) (string, error)
 	specialValidator func(args []string) string
 }
 
-func (command Command) ExecuteCommand(args []string, rawData []byte) (msg string, err error) {
+func (command Command) ExecuteCommand(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	msg = command.validate(args)
 
 	if msg != "" {
@@ -22,7 +21,7 @@ func (command Command) ExecuteCommand(args []string, rawData []byte) (msg string
 		return
 	}
 
-	return command.handler(args, rawData)
+	return command.handler(args, rawData, storage)
 }
 
 func (command Command) validate(args []string) string {
@@ -90,14 +89,14 @@ var incrementCommand Command = Command{
 	maxArguments: 1,
 	handler:      handleIncrement,
 	specialValidator: func(args []string) string {
-		storedValue, exsists := storage.Get(args[0])
+		// storedValue, exsists := storage.Get(args[0])
 
-		if exsists {
-			_, err := strconv.ParseInt(storedValue, 10, 64)
-			if err != nil {
-				return "value is not an integer or out of range"
-			}
-		}
+		// if exsists {
+		// 	_, err := strconv.ParseInt(storedValue, 10, 64)
+		// 	if err != nil {
+		// 		return "value is not an integer or out of range"
+		// 	}
+		// }
 
 		return ""
 	},
@@ -109,14 +108,14 @@ var decrementCommand Command = Command{
 	maxArguments: 1,
 	handler:      handleDecrement,
 	specialValidator: func(args []string) string {
-		storedValue, exsists := storage.Get(args[0])
+		// storedValue, exsists := storage.Get(args[0])
 
-		if exsists {
-			_, err := strconv.ParseInt(storedValue, 10, 64)
-			if err != nil {
-				return "value is not an integer or out of range"
-			}
-		}
+		// if exsists {
+		// 	_, err := strconv.ParseInt(storedValue, 10, 64)
+		// 	if err != nil {
+		// 		return "value is not an integer or out of range"
+		// 	}
+		// }
 
 		return ""
 	},

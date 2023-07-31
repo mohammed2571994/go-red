@@ -4,7 +4,7 @@ import "go-red/config"
 
 var m = make(map[string]string)
 
-func Set(key string, value string, rawData []byte) (err error) {
+func (storage *Storage) Set(key string, value string, rawData []byte) (err error) {
 	m[key] = value
 
 	if config.ServerConfig.ShouldPersist {
@@ -17,12 +17,12 @@ func Set(key string, value string, rawData []byte) (err error) {
 	return
 }
 
-func Get(key string) (value string, exists bool) {
+func (storage *Storage) Get(key string) (value string, exists bool) {
 	value, exists = m[key]
 	return
 }
 
-func Delete(key string) (err error) {
+func (storage *Storage) Delete(key string) (err error) {
 	delete(m, key)
 	return
 }

@@ -15,7 +15,7 @@ const (
 	nullMessage    = "-1"
 )
 
-func handlePing(args []string, rawData []byte) (msg string, err error) {
+func handlePing(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	if len(args) == 0 {
 		msg = marshalResponse("PONG", bulkMessage)
 	} else {
@@ -25,17 +25,17 @@ func handlePing(args []string, rawData []byte) (msg string, err error) {
 	return
 }
 
-func handleEcho(args []string, rawData []byte) (msg string, err error) {
+func handleEcho(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	msg = marshalResponse(args[0], bulkMessage)
 	return
 }
 
-func handleUnknownCommand(args []string, rawData []byte) (msg string, err error) {
+func handleUnknownCommand(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	msg = marshalResponse("unknown command", errorMessage)
 	return
 }
 
-func handleSet(args []string, rawData []byte) (msg string, err error) {
+func handleSet(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	msg = ""
 	err = storage.Set(args[0], args[1], rawData)
 	if err != nil {
@@ -47,7 +47,7 @@ func handleSet(args []string, rawData []byte) (msg string, err error) {
 	return
 }
 
-func handleGet(args []string, rawData []byte) (msg string, err error) {
+func handleGet(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	if val, ok := storage.Get(args[0]); ok {
 		msg = marshalResponse(val, bulkMessage)
 	} else {
@@ -57,7 +57,7 @@ func handleGet(args []string, rawData []byte) (msg string, err error) {
 	return
 }
 
-func handleDelete(args []string, rawData []byte) (msg string, err error) {
+func handleDelete(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	numberOfDeleteItems := 0
 	for _, arg := range args {
 		if _, ok := storage.Get(arg); ok {
@@ -72,7 +72,7 @@ func handleDelete(args []string, rawData []byte) (msg string, err error) {
 	return
 }
 
-func handleIncrement(args []string, rawData []byte) (msg string, err error) {
+func handleIncrement(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	storedValue, exsists := storage.Get(args[0])
 	var convertedValue int64 = 0 //by defaule its zero
 
@@ -92,7 +92,7 @@ func handleIncrement(args []string, rawData []byte) (msg string, err error) {
 	return
 }
 
-func handleDecrement(args []string, rawData []byte) (msg string, err error) {
+func handleDecrement(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	storedValue, exsists := storage.Get(args[0])
 	var convertedValue int64
 

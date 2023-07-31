@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"net"
 	"os"
 
@@ -18,7 +17,14 @@ func main() {
 	commands.InitCommands()
 	config.InitConfig(true, "6379")
 
-	err := loadAof()
+	//storage
+	storage, err := storage.NewStorage("db.txt")
+	if err != nil {
+		fmt.Println("Failed during sotrate creation ", err)
+		os.Exit(1)
+	}
+
+	err = loadAof(storage)
 	if err != nil {
 		fmt.Println("Failed ", err)
 		os.Exit(1)
@@ -39,11 +45,11 @@ func main() {
 			os.Exit(1)
 		}
 
-		handleConnection(conn)
+		handleConnection(conn, storage)
 	}
 }
 
-func handleConnection(conn net.Conn) {
+func handleConnection(conn net.Conn, storage *storage.Storage) {
 	defer conn.Close()
 	respRequest := parser.NewParser(bufio.NewReader(conn))
 
@@ -55,7 +61,7 @@ func handleConnection(conn net.Conn) {
 			return
 		}
 
-		msg, err := command.ExecuteCommand(args, rawData)
+		msg, err := command.ExecuteCommand(args, rawData, storage)
 		if err != nil {
 			fmt.Println("Error while executing the command :", err)
 			return
@@ -70,33 +76,23 @@ func handleConnection(conn net.Conn) {
 	}
 }
 
-func loadAof() error {
+func loadAof(storage *storage.Storage) error {
 	currentShouldPersist := config.ServerConfig.ShouldPersist
 	config.ServerConfig.ShouldPersist = false
 
-	file, err := storage.LoadAof()
-	if err != nil {
-		fmt.Println("Failed to open AOF file", err)
-		os.Exit(1)
-	}
+	defer storage.File.Close()
 
-	defer file.Close()
-
-	reader := bufio.NewReader(file)
-	parser := parser.NewParser(reader)
+	parser := parser.NewParser(storage.Reader)
 
 	for {
 		command, args, rawData, err := parser.Parse()
 		if err != nil {
-			if err == io.EOF {
-				return nil
-			}
 			break
 		}
 
 		fmt.Println(args)
 
-		_, err = command.ExecuteCommand(args, rawData)
+		_, err = command.ExecuteCommand(args, rawData, storage)
 		if err != nil {
 			fmt.Println("Error while executing the command:", err)
 			return err
@@ -104,6 +100,6 @@ func loadAof() error {
 	}
 
 	config.ServerConfig.ShouldPersist = currentShouldPersist
-
-	return err
+	fmt.Println("config.ServerConfig.ShouldPersist", config.ServerConfig.ShouldPersist)
+	return nil
 }

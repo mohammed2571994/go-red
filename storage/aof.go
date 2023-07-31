@@ -1,24 +1,31 @@
 package storage
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 )
 
 type Storage struct {
-	file *os.File
-	path string
+	File   *os.File
+	Reader *bufio.Reader
+	path   string
+	m      map[string]string
 }
 
-func NewAof(path string, flag int) (*Storage, error) {
-	file, err := os.OpenFile(path, flag, os.ModeAppend)
+func NewStorage(path string) (*Storage, error) {
+	file, err := os.OpenFile(path, os.O_RDWR, 0600)
 	if err != nil {
 		return nil, err
 	}
 
+	reader := bufio.NewReader(file)
+
 	return &Storage{
-		path: path,
-		file: file,
+		path:   path,
+		File:   file,
+		Reader: reader,
+		m:      make(map[string]string),
 	}, nil
 }
 
@@ -35,13 +42,4 @@ func writeToFile(rawCommand []byte) error {
 	}
 
 	return nil
-}
-
-func LoadAof() (file *os.File, err error) {
-	file, err = os.OpenFile("db.txt", os.O_RDONLY, os.ModeAppend)
-	if err != nil {
-		return
-	}
-
-	return
 }
