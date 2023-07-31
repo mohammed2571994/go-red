@@ -1,16 +1,35 @@
 package storage
 
-var m = make(map[string]string)
+import "go-red/config"
 
-func Set(key string, value string) {
-	m[key] = value
-}
+func (storage *Storage) Set(key string, value string, rawData []byte) (err error) {
+	storage.m[key] = value
 
-func Get(key string) (value string, exists bool) {
-	value, exists = m[key]
+	if config.ServerConfig.ShouldPersist {
+		err = storage.writeToAof(rawData)
+		if err != nil {
+			delete(storage.m, key)
+		}
+	}
+
 	return
 }
 
-func Delete(key string) {
-	delete(m, key)
+func (storage *Storage) Get(key string) (value string, exists bool) {
+	value, exists = storage.m[key]
+	return
+}
+
+func (storage *Storage) Delete(key string) (err error) {
+	delete(storage.m, key)
+	return
+}
+
+func (storage *Storage) writeToAof(rawCommand []byte) error {
+	_, err := storage.File.Write(rawCommand)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

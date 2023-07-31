@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 	"go-red/storage"
-	"net"
 	"strconv"
 )
 
@@ -11,30 +10,27 @@ type Command struct {
 	Name             string
 	minArguments     int
 	maxArguments     int
-	handler          func(args []string, conn net.Conn) error
-	specialValidator func(args []string) string
+	handler          func(args []string, rawData []byte, storage *storage.Storage) (string, error)
+	specialValidator func(args []string, storage *storage.Storage) string
 }
 
-func (command Command) ExecuteCommand(args []string, conn net.Conn) error {
-	msg := command.validate(args)
+func (command Command) ExecuteCommand(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
+	msg = command.validate(args, storage)
 
 	if msg != "" {
 		msg = marshalResponse(msg, errorMessage)
-
-		_, err := conn.Write([]byte(msg))
-		return err
+		return
 	}
 
-	return command.handler(args, conn)
-
+	return command.handler(args, rawData, storage)
 }
 
-func (command Command) validate(args []string) string {
+func (command Command) validate(args []string, storage *storage.Storage) string {
 	if (command.maxArguments != -1 && len(args) > command.maxArguments) || len(args) < command.minArguments {
 		return fmt.Sprintf("wrong number of arguments for the command %s ", command.Name)
 	}
 
-	return command.specialValidator(args)
+	return command.specialValidator(args, storage)
 }
 
 var pingCommand = Command{
@@ -42,7 +38,7 @@ var pingCommand = Command{
 	minArguments: 0,
 	maxArguments: 1,
 	handler:      handlePing,
-	specialValidator: func(args []string) string {
+	specialValidator: func(args []string, storage *storage.Storage) string {
 		return ""
 	},
 }
@@ -53,7 +49,7 @@ var setCommand Command = Command{
 	// TODO: add support for options like expiry date
 	maxArguments: 2,
 	handler:      handleSet,
-	specialValidator: func(args []string) string {
+	specialValidator: func(args []string, storage *storage.Storage) string {
 		return ""
 	},
 }
@@ -63,7 +59,7 @@ var getCommand Command = Command{
 	minArguments: 1,
 	maxArguments: 1,
 	handler:      handleGet,
-	specialValidator: func(args []string) string {
+	specialValidator: func(args []string, storage *storage.Storage) string {
 		return ""
 	},
 }
@@ -73,7 +69,7 @@ var echoCommand Command = Command{
 	minArguments: 1,
 	maxArguments: 1,
 	handler:      handleEcho,
-	specialValidator: func(args []string) string {
+	specialValidator: func(args []string, storage *storage.Storage) string {
 		return ""
 	},
 }
@@ -83,7 +79,7 @@ var deleteCommand Command = Command{
 	minArguments: 1,
 	maxArguments: -1,
 	handler:      handleDelete,
-	specialValidator: func(args []string) string {
+	specialValidator: func(args []string, storage *storage.Storage) string {
 		return ""
 	},
 }
@@ -93,7 +89,7 @@ var incrementCommand Command = Command{
 	minArguments: 1,
 	maxArguments: 1,
 	handler:      handleIncrement,
-	specialValidator: func(args []string) string {
+	specialValidator: func(args []string, storage *storage.Storage) string {
 		storedValue, exsists := storage.Get(args[0])
 
 		if exsists {
@@ -112,7 +108,7 @@ var decrementCommand Command = Command{
 	minArguments: 1,
 	maxArguments: 1,
 	handler:      handleDecrement,
-	specialValidator: func(args []string) string {
+	specialValidator: func(args []string, storage *storage.Storage) string {
 		storedValue, exsists := storage.Get(args[0])
 
 		if exsists {
@@ -131,7 +127,7 @@ var unknownCommand Command = Command{
 	minArguments: 0,
 	maxArguments: -1,
 	handler:      handleUnknownCommand,
-	specialValidator: func(args []string) string {
+	specialValidator: func(args []string, storage *storage.Storage) string {
 		return ""
 	},
 }

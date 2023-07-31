@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 	"go-red/storage"
-	"net"
 	"strconv"
 )
 
@@ -16,73 +15,64 @@ const (
 	nullMessage    = "-1"
 )
 
-func handlePing(args []string, conn net.Conn) (err error) {
-	msg := ""
-
+func handlePing(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	if len(args) == 0 {
 		msg = marshalResponse("PONG", bulkMessage)
 	} else {
 		msg = marshalResponse(args[0], bulkMessage)
 	}
 
-	_, err = conn.Write([]byte(msg))
 	return
 }
 
-func handleEcho(args []string, conn net.Conn) (err error) {
-	msg := marshalResponse(args[0], bulkMessage)
-
-	_, err = conn.Write([]byte(msg))
+func handleEcho(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
+	msg = marshalResponse(args[0], bulkMessage)
 	return
 }
 
-func handleUnknownCommand(args []string, conn net.Conn) (err error) {
-	msg := marshalResponse("unknown command", errorMessage)
-	_, err = conn.Write([]byte(msg))
+func handleUnknownCommand(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
+	msg = marshalResponse("unknown command", errorMessage)
+	return
+}
+
+func handleSet(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
+	msg = ""
+	err = storage.Set(args[0], args[1], rawData)
+	if err != nil {
+		msg = marshalResponse("something went wrong", errorMessage)
+	} else {
+		msg = marshalResponse("OK", bulkMessage)
+	}
 
 	return
 }
 
-func handleSet(args []string, conn net.Conn) (err error) {
-	storage.Set(args[0], args[1])
-	msg := marshalResponse("OK", bulkMessage)
-
-	_, err = conn.Write([]byte(msg))
-
-	return err
-}
-
-func handleGet(args []string, conn net.Conn) (err error) {
-	msg := ""
-
-	// TODO: abstract storage
+func handleGet(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	if val, ok := storage.Get(args[0]); ok {
 		msg = marshalResponse(val, bulkMessage)
 	} else {
 		msg = marshalResponse("", nullMessage)
 	}
 
-	_, err = conn.Write([]byte(msg))
 	return
 }
 
-func handleDelete(args []string, conn net.Conn) (err error) {
+func handleDelete(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	numberOfDeleteItems := 0
 	for _, arg := range args {
 		if _, ok := storage.Get(arg); ok {
 			numberOfDeleteItems++
 		}
 
+		// TODO: add persistence
 		storage.Delete(arg)
 	}
 
-	msg := marshalResponse(fmt.Sprint(numberOfDeleteItems), integerMessage)
-
-	_, err = conn.Write([]byte(msg))
+	msg = marshalResponse(fmt.Sprint(numberOfDeleteItems), integerMessage)
 	return
 }
 
-func handleIncrement(args []string, conn net.Conn) (err error) {
+func handleIncrement(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	storedValue, exsists := storage.Get(args[0])
 	var convertedValue int64 = 0 //by defaule its zero
 
@@ -92,17 +82,19 @@ func handleIncrement(args []string, conn net.Conn) (err error) {
 
 	convertedValue++
 
-	storage.Set(args[0], fmt.Sprint(convertedValue))
-	msg := marshalResponse(fmt.Sprint(convertedValue), integerMessage)
+	err = storage.Set(args[0], fmt.Sprint(convertedValue), rawData)
+	if err != nil {
+		msg = marshalResponse("something went wrong", errorMessage)
+	} else {
+		msg = marshalResponse(fmt.Sprint(convertedValue), integerMessage)
+	}
 
-	_, err = conn.Write([]byte(msg))
-
-	return err
+	return
 }
 
-func handleDecrement(args []string, conn net.Conn) (err error) {
+func handleDecrement(args []string, rawData []byte, storage *storage.Storage) (msg string, err error) {
 	storedValue, exsists := storage.Get(args[0])
-	var convertedValue int64 = 0 //by defaule its zero
+	var convertedValue int64
 
 	if exsists {
 		convertedValue, _ = strconv.ParseInt(storedValue, 10, 64)
@@ -110,12 +102,14 @@ func handleDecrement(args []string, conn net.Conn) (err error) {
 
 	convertedValue--
 
-	storage.Set(args[0], fmt.Sprint(convertedValue))
-	msg := marshalResponse(fmt.Sprint(convertedValue), integerMessage)
+	storage.Set(args[0], fmt.Sprint(convertedValue), rawData)
+	if err != nil {
+		msg = marshalResponse("something went wrong", errorMessage)
+	} else {
+		msg = marshalResponse(fmt.Sprint(convertedValue), integerMessage)
+	}
 
-	_, err = conn.Write([]byte(msg))
-
-	return err
+	return
 }
 
 func marshalResponse(msg string, msgType string) string {
