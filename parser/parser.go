@@ -12,38 +12,44 @@ type Parser struct {
 	reader *bufio.Reader
 }
 
-func NewParser(reader bufio.Reader) *Parser {
-	return &Parser{reader: &reader}
+// TODO: find a better way than using a global variable
+var RawData []byte
+
+func NewParser(reader *bufio.Reader) *Parser {
+	return &Parser{reader: reader}
 }
 
-func (resp *Parser) Parse() (command commands.Command, args []string, err error) {
-	numberOfElements, err := resp.readInteger()
+func (parser *Parser) Parse() (command commands.Command, args []string, rawData []byte, err error) {
+	RawData = []byte{}
+
+	numberOfElements, err := parser.readInteger()
 	if err != nil {
 		return
 	}
 
-	numberOfBytes, err := resp.readInteger()
+	numberOfBytes, err := parser.readInteger()
 	if err != nil {
 		return
 	}
 
 	bytes := make([]byte, numberOfBytes)
 
-	_, err = resp.reader.Read(bytes)
+	_, err = parser.reader.Read(bytes)
 	if err != nil {
 		return
 	}
+	RawData = append(RawData, bytes...)
 
 	// skip /r /n
-	resp.skipBytes(2)
+	parser.skipBytes(2)
 
-	args, err = resp.readArgs(numberOfElements)
+	args, err = parser.readArgs(numberOfElements)
 	if err != nil {
 		return
 	}
 
 	command = commands.GetCommand(strings.ToLower(string(bytes)))
-	return command, args, nil
+	return command, args, RawData, nil
 }
 
 func (resp *Parser) readInteger() (n int, err error) {
@@ -66,6 +72,8 @@ func (resp *Parser) readLine() (line []byte, err error) {
 		return nil, err
 	}
 
+	RawData = append(RawData, line...)
+
 	return line[:len(line)-2], nil
 }
 
@@ -83,6 +91,7 @@ func (resp *Parser) readArgs(numberOfElements int) (args []string, err error) {
 		if err != nil {
 			return
 		}
+		RawData = append(RawData, bytes...)
 
 		args = append(args, string(bytes))
 
@@ -97,13 +106,15 @@ func (resp *Parser) readArgs(numberOfElements int) (args []string, err error) {
 	return args, nil
 }
 
-func (resp *Parser) skipBytes(n int) (err error) {
+func (resp *Parser) skipBytes(n int) error {
 	for i := 0; i < n; i++ {
-		_, err = resp.reader.ReadByte()
+		b, err := resp.reader.ReadByte()
 		if err != nil {
-			return
+			return err
 		}
+
+		RawData = append(RawData, b)
 	}
 
-	return
+	return nil
 }

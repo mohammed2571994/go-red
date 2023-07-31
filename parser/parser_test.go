@@ -21,9 +21,9 @@ func TestParse(t *testing.T) {
 				recievedData := "*1\r\n$4\r\nPING\r\n"
 				expectedCommandName := "ping"
 
-				parser := NewParser(*bufio.NewReader(strings.NewReader(recievedData)))
+				parser := NewParser(bufio.NewReader(strings.NewReader(recievedData)))
 
-				command, args, err := parser.Parse()
+				command, args, _, err := parser.Parse()
 
 				if err != nil {
 					t.Errorf("returned error =  %v, expected nil", err)
@@ -46,9 +46,9 @@ func TestParse(t *testing.T) {
 				recievedData := "*2\r\n$4\r\nPING\r\n$2\r\nHi\r\n"
 				expectedCommandName := "ping"
 
-				parser := NewParser(*bufio.NewReader(strings.NewReader(recievedData)))
+				parser := NewParser(bufio.NewReader(strings.NewReader(recievedData)))
 
-				command, args, err := parser.Parse()
+				command, args, _, err := parser.Parse()
 
 				if err != nil {
 					t.Errorf("returned error =  %v, expected nil", err)
@@ -71,9 +71,9 @@ func TestParse(t *testing.T) {
 				recievedData := "*3\r\n$4\r\nPING\r\n$5\r\nHello\r\n$5\r\nWorld\r\n"
 				expectedCommandName := "ping"
 
-				parser := NewParser(*bufio.NewReader(strings.NewReader(recievedData)))
+				parser := NewParser(bufio.NewReader(strings.NewReader(recievedData)))
 
-				command, args, err := parser.Parse()
+				command, args, _, err := parser.Parse()
 
 				if err != nil {
 					t.Errorf("returned error =  %v, expected nil", err)

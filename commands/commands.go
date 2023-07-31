@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 	"go-red/storage"
-	"net"
 	"strconv"
 )
 
@@ -11,22 +10,19 @@ type Command struct {
 	Name             string
 	minArguments     int
 	maxArguments     int
-	handler          func(args []string, conn net.Conn) error
+	handler          func(args []string, rawData []byte) (string, error)
 	specialValidator func(args []string) string
 }
 
-func (command Command) ExecuteCommand(args []string, conn net.Conn) error {
-	msg := command.validate(args)
+func (command Command) ExecuteCommand(args []string, rawData []byte) (msg string, err error) {
+	msg = command.validate(args)
 
 	if msg != "" {
 		msg = marshalResponse(msg, errorMessage)
-
-		_, err := conn.Write([]byte(msg))
-		return err
+		return
 	}
 
-	return command.handler(args, conn)
-
+	return command.handler(args, rawData)
 }
 
 func (command Command) validate(args []string) string {
