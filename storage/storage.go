@@ -20,8 +20,17 @@ func (storage *Storage) Get(key string) (value string, exists bool) {
 	return
 }
 
-func (storage *Storage) Delete(key string) (err error) {
+func (storage *Storage) Delete(key string, rawData []byte) (err error) {
+	val := storage.m[key]
+
 	delete(storage.m, key)
+	if config.ServerConfig.ShouldPersist {
+		err = storage.writeToAof(rawData)
+		if err != nil {
+			storage.m[key] = val
+		}
+	}
+
 	return
 }
 

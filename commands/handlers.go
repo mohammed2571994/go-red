@@ -64,8 +64,7 @@ func handleDelete(args []string, rawData []byte, storage *storage.Storage) (msg 
 			numberOfDeleteItems++
 		}
 
-		// TODO: add persistence
-		storage.Delete(arg)
+		storage.Delete(arg, rawData)
 	}
 
 	msg = marshalResponse(fmt.Sprint(numberOfDeleteItems), integerMessage)
