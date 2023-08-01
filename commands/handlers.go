@@ -2,7 +2,7 @@ package commands
 
 import (
 	"fmt"
-	"go-red/storage"
+	"mini-go-redis/storage"
 	"strconv"
 )
 

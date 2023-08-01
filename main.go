@@ -6,10 +6,10 @@ import (
 	"net"
 	"os"
 
-	"go-red/commands"
-	"go-red/config"
-	"go-red/parser"
-	"go-red/storage"
+	"mini-go-redis/commands"
+	"mini-go-redis/config"
+	"mini-go-redis/parser"
+	"mini-go-redis/storage"
 )
 
 func main() {

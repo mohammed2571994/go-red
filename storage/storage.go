@@ -1,6 +1,6 @@
 package storage
 
-import "go-red/config"
+import "mini-go-redis/config"
 
 func (storage *Storage) Set(key string, value string, rawData []byte) (err error) {
 	storage.m[key] = value
