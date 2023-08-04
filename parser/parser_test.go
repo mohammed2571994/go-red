@@ -2,7 +2,7 @@ package parser
 
 import (
 	"bufio"
-	"go-red/commands"
+	"mini-go-redis/commands"
 	"strings"
 	"testing"
 )

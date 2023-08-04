@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"go-red/commands"
+	"mini-go-redis/commands"
 )
 
 type Parser struct {

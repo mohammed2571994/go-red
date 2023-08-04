@@ -2,7 +2,7 @@ package commands
 
 import (
 	"fmt"
-	"go-red/storage"
+	"mini-go-redis/storage"
 	"strconv"
 )
 
@@ -61,11 +61,12 @@ func handleDelete(args []string, rawData []byte, storage *storage.Storage) (msg 
 	numberOfDeleteItems := 0
 	for _, arg := range args {
 		if _, ok := storage.Get(arg); ok {
+			err := storage.Delete(arg, rawData)
+			if err != nil {
+				continue
+			}
 			numberOfDeleteItems++
 		}
-
-		// TODO: add persistence
-		storage.Delete(arg)
 	}
 
 	msg = marshalResponse(fmt.Sprint(numberOfDeleteItems), integerMessage)
