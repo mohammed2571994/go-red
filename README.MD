@@ -18,6 +18,7 @@ a simple Redis server implementation, designed for learning Golang and understan
 
 ## Features
 - [ ] AOF persistency
+- [ ] Support Concurrent Connections
 - [ ] PubSub
 - [ ] Replication
 
