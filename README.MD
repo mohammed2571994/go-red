@@ -1,4 +1,4 @@
-# mini-mini-go-redis
+# mini-go-redis
 
 a simple Redis server implementation, designed for learning Golang and understanding the inner workings of Redis.
 
@@ -24,4 +24,4 @@ a simple Redis server implementation, designed for learning Golang and understan
 - [ ] Replication
 
 
-Stay tuned for upcoming updates and improvements to mini-mini-go-redis :rocket:
+Stay tuned for upcoming updates and improvements to mini-go-redis :rocket:
